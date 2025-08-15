@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Dashboard - DailyDabba</title>
-
+    <link rel="icon" href="assets/image.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;900&display=swap" rel="stylesheet">
@@ -123,9 +123,34 @@
         .history-card-stats p { margin: 0; font-size: 1rem; }
         .history-card-stats .bill { font-weight: 700; color: var(--secondary-color); }
 
+        #pending-meals-section.hidden { display: none; }
+        .pending-meals-container {
+            background: var(--primary-color); color: var(--dark-color); padding: 1.5rem;
+            border-radius: var(--border-radius); margin-bottom: 2rem; box-shadow: 0 5px 25px rgba(249, 168, 38, 0.3);
+        }
+        .pending-meals-container h2 {
+            color: var(--dark-color); margin-top: 0; margin-bottom: 1.5rem;
+            text-align: center; font-size: 1.5rem;
+        }
+        .pending-meal-card {
+            background: #fff; padding: 1rem 1.5rem; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+        }
+        .pending-meal-card:last-child { margin-bottom: 0; }
+        .pending-meal-info { font-weight: 700; font-size: 1.1rem; }
+        .pending-meal-actions { display: flex; gap: 0.5rem; }
+        .pending-meal-actions .btn-action {
+            padding: 8px 16px; font-weight: 700; border-radius: 6px;
+            border: none; cursor: pointer; transition: transform 0.2s;
+        }
+        .pending-meal-actions .btn-action:hover { transform: scale(1.05); }
+        .btn-yes { background-color: var(--secondary-color); color: #fff; }
+        .btn-no { background-color: var(--danger-color); color: #fff; }
+
         @media (max-width: 992px) {
             .dashboard-layout { flex-direction: column; }
             .header { padding: 1rem; }
+            .pending-meal-card { flex-direction: column; gap: 1rem; text-align: center; }
         }
     </style>
 </head>
@@ -139,6 +164,13 @@
 
     <div class="dashboard-layout">
         <main class="main-content">
+            <section id="pending-meals-section" class="hidden">
+                <div class="pending-meals-container">
+                    <h2>Action Required</h2>
+                    <div id="pending-meals-list"></div>
+                </div>
+            </section>
+            
             <div class="card calendar-container">
                 <div id='calendar'></div>
             </div>
@@ -289,6 +321,7 @@
                 await loadDashboardData();
             }
             
+            await checkForPendingMeals();
             configurePushNotifications();
         });
 
@@ -304,7 +337,7 @@
             document.getElementById('new-setup-btn').addEventListener('click', startNewSetup);
             document.getElementById('delete-account-btn').addEventListener('click', deleteAccount);
             document.getElementById('load-history-btn').addEventListener('click', loadHistory);
-            
+            document.getElementById('pending-meals-list').addEventListener('click', handlePendingMealAction);
             initializeTooltipLogic();
         }
         
@@ -332,7 +365,7 @@
                 window.history.replaceState({}, document.title, "/dashboard.html");
             }
     
-            saveReasonBtn.addEventListener('click', async () => {
+            const saveReasonHandler = async () => {
                 if (!timeToSkip) return;
                 const reason = document.getElementById('skip-reason-input').value;
                 try {
@@ -340,8 +373,14 @@
                     reasonModal.classList.add('hidden');
                     document.getElementById('skip-reason-input').value = '';
                     await loadDashboardData();
+                    await checkForPendingMeals();
                 } catch (error) { console.error('Failed to save skip reason:', error); }
-            });
+            };
+            
+            const newSaveBtn = saveReasonBtn.cloneNode(true);
+            saveReasonBtn.parentNode.replaceChild(newSaveBtn, saveReasonBtn);
+            newSaveBtn.addEventListener('click', saveReasonHandler);
+
             return didUpdate;
         }
 
@@ -457,6 +496,65 @@
             } catch (error) { historyContainer.innerHTML = `<p style="color: red;">${error.message}</p>`; }
         }
 
+        async function checkForPendingMeals() {
+            const pendingSection = document.getElementById('pending-meals-section');
+            const pendingList = document.getElementById('pending-meals-list');
+            try {
+                const response = await fetch('/api/user/pending-meals', { headers: { 'Authorization': `Bearer ${token}` } });
+                const pendingMeals = await response.json();
+                if (pendingMeals.length > 0) {
+                    let html = '';
+                    pendingMeals.forEach(meal => {
+                        html += `<div class="pending-meal-card">
+                                <div class="pending-meal-info">Did you take your meal at ${meal.time}?</div>
+                                <div class="pending-meal-actions">
+                                    <button class="btn-action btn-yes" data-time="${meal.time}">Yes</button>
+                                    <button class="btn-action btn-no" data-time="${meal.time}">No</button>
+                                </div></div>`;
+                    });
+                    pendingList.innerHTML = html;
+                    pendingSection.classList.remove('hidden');
+                } else {
+                    pendingSection.classList.add('hidden');
+                }
+            } catch (error) { console.error('Failed to check for pending meals:', error); }
+        }
+
+        async function handlePendingMealAction(e) {
+            const target = e.target;
+            const time = target.dataset.time;
+            if (!time) return;
+
+            if (target.classList.contains('btn-yes')) {
+                try {
+                    await fetch('/api/user/record-tiffin', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ time }) });
+                    await loadDashboardData();
+                    await checkForPendingMeals();
+                } catch (error) { console.error(error); }
+            } else if (target.classList.contains('btn-no')) {
+                // To open the modal, we can re-use the logic from handleUrlActions
+                const reasonModal = document.getElementById('reason-modal');
+                const saveReasonBtn = document.getElementById('save-reason-btn');
+                let timeToSkip = time; // Set the time from the button click
+                
+                const saveReasonHandler = async () => {
+                    const reason = document.getElementById('skip-reason-input').value;
+                    try {
+                        await fetch('/api/user/skip-tiffin', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ time: timeToSkip, reason: reason }) });
+                        reasonModal.classList.add('hidden');
+                        document.getElementById('skip-reason-input').value = '';
+                        await loadDashboardData();
+                        await checkForPendingMeals();
+                    } catch (error) { console.error('Failed to save skip reason:', error); }
+                };
+
+                const newSaveBtn = saveReasonBtn.cloneNode(true);
+                saveReasonBtn.parentNode.replaceChild(newSaveBtn, saveReasonBtn);
+                newSaveBtn.addEventListener('click', saveReasonHandler, { once: true });
+                reasonModal.classList.remove('hidden');
+            }
+        }
+        
         async function configurePushNotifications() {
             console.log('%c--- Starting Notification Setup ---', 'color: #F9A826; font-weight: bold;');
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) { console.error('❌ Push messaging is not supported.'); return; }
@@ -486,6 +584,64 @@
                 }
                 console.log('%c--- Notification Setup Complete ---', 'color: #4CAF50; font-weight: bold;');
             } catch (error) { console.error('❌ Critical error during notification setup:', error); }
+        }
+         function initializeTooltipLogic() {
+            // This variable will track which tooltip is currently visible
+            let visibleTooltipTarget = null;
+
+            // Listen for clicks on the ENTIRE calendar for efficiency
+            calendarEl.addEventListener('click', (e) => {
+                const mealBox = e.target;
+
+                // If the user clicks anywhere that is NOT a meal box...
+                if (!mealBox.classList.contains('meal-box')) {
+                    // ...and a tooltip is currently visible, hide it.
+                    if (visibleTooltipTarget) {
+                       reasonTooltip.classList.remove('visible');
+                       visibleTooltipTarget = null;
+                    }
+                    return; // Stop here
+                }
+
+                // If a tooltip is already visible for a DIFFERENT box, hide the old one first.
+                if (visibleTooltipTarget && visibleTooltipTarget !== mealBox) {
+                    reasonTooltip.classList.remove('visible');
+                    visibleTooltipTarget = null;
+                }
+                
+                const status = mealBox.dataset.status;
+                const reason = mealBox.dataset.reason;
+
+                // Only do something if the box is 'skipped' and has a reason
+                if (status === 'skipped' && reason) {
+                    // This is the TOGGLE logic
+                    if (visibleTooltipTarget === mealBox) {
+                        // If we clicked the same box again, it means we want to HIDE the tooltip.
+                        reasonTooltip.classList.remove('visible');
+                        visibleTooltipTarget = null;
+                    } else {
+                        // Otherwise, we want to SHOW the tooltip.
+                        reasonTooltip.textContent = reason;
+                        
+                        // Calculate position
+                        const rect = mealBox.getBoundingClientRect();
+                        reasonTooltip.style.left = `${rect.left + rect.width / 2}px`;
+                        reasonTooltip.style.top = `${rect.top}px`;
+                        // Position it perfectly centered and above the box
+                        reasonTooltip.style.transform = 'translate(-50%, -110%)';
+                        
+                        // Make it visible
+                        reasonTooltip.classList.add('visible');
+                        visibleTooltipTarget = mealBox;
+                    }
+                } else {
+                    // If the user clicks a green or gray box, ensure any old tooltip is hidden.
+                    if(visibleTooltipTarget) {
+                       reasonTooltip.classList.remove('visible');
+                       visibleTooltipTarget = null;
+                    }
+                }
+            });
         }
     </script>
 </body>
