@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - DailyDabba</title>
+    
+    <!-- Google Fonts for a warm, modern feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS RESET & THEME DEFINITION (Identical to login page for consistency) --- */
+        :root {
+            --primary-color: #F9A826; /* Saffron/Mango Orange */
+            --dark-color: #3d3d3d; /* Charcoal Grey */
+            --bg-color: #FFF8F0; /* Creamy Off-white */
+            --text-color: #595959;
+            --border-radius: 12px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* --- KEYFRAME ANIMATIONS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .signup-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- LEFT DECORATIVE PANEL --- */
+        .signup-panel-left {
+            flex: 1;
+            background-color: var(--primary-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            text-align: center;
+        }
+        .signup-panel-left .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-decoration: none;
+            color: #fff;
+        }
+        .signup-panel-left .tagline {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            max-width: 300px;
+        }
+        .illustration-svg {
+            width: 80%;
+            max-width: 300px;
+            margin: 3rem 0;
+        }
+        .home-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+        .home-button:hover {
+            background-color: #fff;
+            color: var(--primary-color);
+        }
+
+        /* --- RIGHT FORM PANEL --- */
+        .signup-panel-right {
+            flex: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .auth-form {
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .auth-form h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        .auth-form .subtitle {
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-family: 'Nunito Sans', sans-serif;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        #signup-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: var(--primary-color);
+            color: var(--dark-color);
+            box-shadow: 0 4px 15px rgba(249, 168, 38, 0.3);
+        }
+        #signup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(249, 168, 38, 0.5);
+        }
+        #message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #e74c3c;
+            font-weight: 700;
+            min-height: 20px;
+        }
+        .switch-form {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .switch-form a {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 900px) {
+            .signup-container {
+                flex-direction: column;
+            }
+            .signup-panel-left {
+                flex: none;
+                height: auto;
+                padding: 3rem 1rem;
+            }
+            .signup-panel-right {
+                padding: 3rem 1rem;
+            }
+            .illustration-svg {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signup-container">
+        
+        <!-- Left Decorative Panel -->
+        <div class="signup-panel-left">
+            <a href="index.html" class="logo">DailyDabba</a>
+            <p class="tagline">Start your journey to effortless meal tracking. One less thing to worry about.</p>
+            
+            <svg class="illustration-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M60 150 Q50 100 60 50 L140 50 Q150 100 140 150 Z" />
+                    <path d="M50 50 H150" />
+                    <path d="M100 50 V30 M100 30 H80 L120 30" />
+                    <path d="M70 80 Q100 70 130 80" fill="#FFFFFF" opacity="0.5"/>
+                    <path d="M70 110 Q100 120 130 110" fill="#FFFFFF" opacity="0.5"/>
+                </g>
+            </svg>
+
+            <a href="index.html" class="home-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+                </svg>
+                Back to Home
+            </a>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="signup-panel-right">
+            <div class="auth-form">
+                <h2>Create Your Account</h2>
+                <p class="subtitle">Join DailyDabba and simplify your life today.</p>
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Create a strong password" required>
+                </div>
+                <button id="signup-btn">Sign Up for Free</button>
+                <p id="message"></p>
+                <p class="switch-form">Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const signupBtn = document.getElementById('signup-btn');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const messageEl = document.getElementById('message');
+
+        signupBtn.addEventListener('click', async () => {
+            const name = nameInput.value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            messageEl.textContent = '';
+
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                
+                localStorage.setItem('tiffinUserToken', data.token);
+                localStorage.setItem('tiffinUserName', data.name);
+                
+                // IMPORTANT: Using root-relative path for robustness
+                window.location.href = 'setup.html';
+
+            } catch (error) {
+                messageEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

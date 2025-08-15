@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Setup Your Tracker - DailyDabba</title>
+
+    <!-- Google Fonts for a warm, modern feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS RESET & THEME DEFINITION --- */
+        :root {
+            --primary-color: #F9A826; /* Saffron/Mango Orange */
+            --secondary-color: #4CAF50; /* Fresh Green for the save button */
+            --dark-color: #3d3d3d; /* Charcoal Grey */
+            --bg-color: #FFF8F0; /* Creamy Off-white */
+            --text-color: #595959;
+            --border-radius: 12px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* --- KEYFRAME ANIMATIONS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- SETUP FORM CONTAINER --- */
+        .setup-container {
+            width: 100%;
+            max-width: 550px;
+            background: #fff;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .progress-bar-inner {
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-color);
+            animation: fill-progress 1s ease-out;
+        }
+        @keyframes fill-progress {
+            from { width: 50%; }
+            to { width: 100%; }
+        }
+
+        .setup-container .logo {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--dark-color);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .setup-container .logo .icon {
+            color: var(--primary-color);
+        }
+        
+        .setup-container h2 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        .setup-container .subtitle {
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-family: 'Nunito Sans', sans-serif;
+            transition: border-color 0.3s;
+            background-color: #f9f9f9;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+        
+        #save-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: var(--secondary-color);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            margin-top: 1rem;
+        }
+        #save-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+        #message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #e74c3c;
+            font-weight: 700;
+            min-height: 20px;
+        }
+        
+        #time-inputs-container {
+            border-top: 1px solid #eee;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="setup-container">
+        <div class="progress-bar">
+            <div class="progress-bar-inner"></div>
+        </div>
+        <a href="/" class="logo">Daily<span class="icon">Dabba</span></a>
+        <h2>One Last Step...</h2>
+        <p class="subtitle">Let's get your tracker configured perfectly for you.</p>
+        
+        <div class="form-group">
+            <label for="mess-name">Mess / Tiffin Service Name</label>
+            <input type="text" id="mess-name" placeholder="e.g., Ankit's Kitchen" required>
+        </div>
+        <div class="form-group">
+            <label for="price">Price Per Tiffin (in ₹)</label>
+            <input type="number" id="price" placeholder="e.g., 80" required>
+        </div>
+        <div class="form-group">
+            <label for="meals-per-day">How many meals will you track per day?</label>
+            <select id="meals-per-day">
+                <option value="1">One</option>
+                <option value="2" selected>Two</option>
+                <option value="3">Three</option>
+            </select>
+        </div>
+        
+        <div id="time-inputs-container">
+            <!-- Time inputs will be dynamically generated here -->
+        </div>
+        
+        <button id="save-btn">Save & Go to Dashboard</button>
+        <p id="message"></p>
+    </div>
+    
+    <script>
+        const token = localStorage.getItem('tiffinUserToken');
+        if (!token) window.location.href = '/login.html';
+
+        const mealsSelect = document.getElementById('meals-per-day');
+        const timeInputsContainer = document.getElementById('time-inputs-container');
+        const saveBtn = document.getElementById('save-btn');
+        const messageEl = document.getElementById('message');
+
+        function generateTimeInputs() {
+            const count = parseInt(mealsSelect.value);
+            timeInputsContainer.innerHTML = ''; // Clear previous inputs
+            
+            for (let i = 1; i <= count; i++) {
+                // Set smart default labels and times
+                const mealLabel = (count === 1) ? 'Meal Time' : (i === 1 ? 'First Meal (e.g., Lunch)' : (i === 2 ? 'Second Meal (e.g., Dinner)' : `Meal ${i}`));
+                const defaultTime = (count === 1) ? '13:00' : (i === 1 ? '13:00' : (i === 2 ? '20:00' : '09:00'));
+
+                timeInputsContainer.innerHTML += `
+                    <div class="form-group">
+                        <label>${mealLabel}</label>
+                        <input type="time" class="time-input" value="${defaultTime}" required>
+                    </div>`;
+            }
+        }
+        
+        // Initial call to generate the default (2 meal) time inputs
+        generateTimeInputs();
+        mealsSelect.addEventListener('change', generateTimeInputs);
+
+        saveBtn.addEventListener('click', async () => {
+            const notificationTimes = Array.from(document.querySelectorAll('.time-input')).map(input => input.value);
+            const setupData = {
+                messName: document.getElementById('mess-name').value,
+                pricePerTiffin: parseFloat(document.getElementById('price').value),
+                notificationTimes: notificationTimes
+            };
+
+            // Basic validation
+            if (!setupData.messName || !setupData.pricePerTiffin) {
+                messageEl.textContent = 'Please fill in all fields.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify(setupData)
+                });
+                if (!response.ok) throw new Error('Failed to save setup. Please try again.');
+                
+                // On success, redirect to the dashboard
+                window.location.href = '/dashboard.html';
+            } catch (error) {
+                messageEl.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

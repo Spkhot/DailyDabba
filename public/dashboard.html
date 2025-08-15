@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard - DailyDabba</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    
+    <style>
+        :root {
+            --primary-color: #F9A826; --secondary-color: #4CAF50; --dark-color: #3d3d3d;
+            --bg-color: #FFF8F0; --text-color: #595959; --danger-color: #dc3545; --border-radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Nunito Sans', sans-serif; background-color: var(--bg-color);
+            color: var(--text-color); line-height: 1.6;
+        }
+
+        .header {
+            background-color: #fff; padding: 1rem 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header .logo { font-size: 1.8rem; font-weight: 900; color: var(--dark-color); text-decoration: none; }
+        .header .logo .icon { color: var(--primary-color); }
+        .header-right { display: flex; align-items: center; gap: 1rem; }
+        .profile-icon {
+            width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); color: var(--dark-color);
+            display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; user-select: none; transition: transform 0.2s ease-in-out;
+        }
+        .profile-icon:hover { transform: scale(1.1); }
+        
+        .dashboard-layout { display: flex; gap: 2rem; max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+        .main-content { flex: 2.5; }
+        .sidebar { flex: 1; }
+
+        .card {
+            background: #fff; padding: 1.5rem; border-radius: var(--border-radius);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05); margin-bottom: 1.5rem;
+        }
+        .card h3 {
+            margin-top: 0; font-size: 1rem; font-weight: 700; color: var(--text-color);
+            border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem;
+        }
+        .stat-card .value { font-size: 2.5rem; font-weight: 900; color: var(--dark-color); }
+        .stat-card .value.bill { color: var(--secondary-color); }
+        .time-list { list-style: none; padding-left: 0; }
+        .time-list li { font-size: 1.2rem; font-weight: 700; padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; }
+
+        .fc-daygrid-day-frame { position: relative; min-height: 100px; }
+        .meal-slots-container { position: absolute; bottom: 5px; right: 5px; display: flex; gap: 4px; }
+        .meal-box {
+            width: 16px; height: 16px; border: 1px solid #ccc; border-radius: 4px;
+            transition: transform 0.2s; cursor: pointer;
+        }
+        .meal-box:hover { transform: scale(1.3); z-index: 10; }
+        .meal-box.pending { background-color: #e9ecef; border-color: #ced4da; }
+        .meal-box.taken { background-color: var(--secondary-color); border-color: #3a8e3d; }
+        .meal-box.skipped { background-color: var(--danger-color); border-color: #b21f2d; }
+        
+        #reason-tooltip {
+            position: fixed; background-color: var(--dark-color); color: #fff; padding: 8px 12px;
+            border-radius: 6px; font-size: 0.9rem; font-weight: 700; z-index: 9999;
+            pointer-events: none; opacity: 0; transform: scale(0.9); transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        #reason-tooltip.visible { opacity: 1; transform: scale(1); }
+
+        .modal {
+            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal:not(.hidden) { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: #fff; padding: 2rem 2.5rem; width: 90%; max-width: 500px;
+            border-radius: var(--border-radius); position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            color: #aaa; position: absolute; top: 10px; right: 20px; font-size: 28px;
+            font-weight: bold; cursor: pointer;
+        }
+        .close-btn:hover { color: black; }
+        .modal h2 { margin-top: 0; color: var(--dark-color); font-weight: 900; }
+        .modal p { margin-top: -1rem; margin-bottom: 2rem; color: #666; }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--dark-color); }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #ccc;
+            border-radius: 6px; box-sizing: border-box; font-size: 1rem;
+        }
+        
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 6px; color: white;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-save { background-color: var(--secondary-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-secondary { background-color: var(--text-color); color: white; }
+        .btn-outline {
+            background-color: transparent; color: var(--dark-color); border: 2px solid var(--dark-color);
+        }
+        .btn-outline:hover { background-color: var(--dark-color); color: #fff; }
+
+        #history-section { padding-top: 0; }
+        .history-header {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .history-header h2 { margin: 0; font-size: 1.8rem; font-weight: 900; color: var(--dark-color); }
+        #history-container.hidden { display: none; }
+        .history-card {
+            background: var(--bg-color);
+            border-radius: 8px; padding: 1rem 1.5rem; margin-top: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .history-card-month { font-size: 1.2rem; font-weight: 700; color: var(--dark-color); }
+        .history-card-stats { text-align: right; }
+        .history-card-stats p { margin: 0; font-size: 1rem; }
+        .history-card-stats .bill { font-weight: 700; color: var(--secondary-color); }
+
+        @media (max-width: 992px) {
+            .dashboard-layout { flex-direction: column; }
+            .header { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">Daily<span class="icon">Dabba</span></a>
+        <div class="header-right">
+            <div class="profile-icon" id="profile-icon"></div>
+        </div>
+    </header>
+
+    <div class="dashboard-layout">
+        <main class="main-content">
+            <div class="card calendar-container">
+                <div id='calendar'></div>
+            </div>
+            <section class="card" id="history-section">
+                <div class="history-header">
+                    <h2>Monthly History</h2>
+                    <button id="load-history-btn" class="btn btn-secondary">View Past Months</button>
+                </div>
+                <div id="history-container" class="hidden"></div>
+            </section>
+        </main>
+        <aside class="sidebar">
+            <div class="card stat-card">
+                <h3>Tiffins This Month</h3>
+                <p class="value" id="tiffin-count">0</p>
+            </div>
+            <div class="card stat-card">
+                <h3>Estimated Bill</h3>
+                <p class="value bill">₹<span id="total-bill">0.00</span></p>
+            </div>
+            <div class="card">
+                <h3>Your Details</h3>
+                <p><strong>Mess Name:</strong> <span id="mess-name">...</span></p>
+                <p><strong>Your Name:</strong> <span id="user-name-display">...</span></p>
+            </div>
+            <div class="card">
+                <h3>Your Meal Times</h3>
+                <ul id="time-list-display" class="time-list"></ul>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modals -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Settings</h2>
+            <div class="form-group">
+                <label for="edit-mess-name">Mess Name</label>
+                <input type="text" id="edit-mess-name">
+            </div>
+            <div class="form-group">
+                <label for="edit-price">Price Per Tiffin</label>
+                <input type="number" id="edit-price">
+            </div>
+            <div class="form-group">
+                 <label>Notification Times</label>
+                 <div id="edit-time-inputs"></div>
+            </div>
+            <button id="save-settings-btn" class="btn btn-save">Save Changes</button>
+            <p id="settings-message"></p>
+            <hr style="margin: 2rem 0 1.5rem 0; border: none; border-top: 1px solid #eee;">
+            <button id="new-setup-btn" class="btn btn-outline">Start New Setup (Change Meal Count)</button>
+            <button id="delete-account-btn" class="btn btn-danger" style="margin-top: 1rem;">Delete Account</button>
+            <button id="logout-btn" class="btn btn-secondary" style="margin-top: 1rem;">Logout</button>
+        </div>
+    </div>
+    
+    <div id="reason-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Why did you skip this meal?</h2>
+            <p>(This is optional)</p>
+            <div class="form-group">
+                <textarea id="skip-reason-input" rows="4"></textarea>
+            </div>
+            <button id="save-reason-btn" class="btn btn-save">Submit</button>
+        </div>
+    </div>
+
+    <div id="reason-tooltip"></div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script>
+        const token = localStorage.getItem('tiffinUserToken');
+        if (!token) window.location.href = '/login.html';
+
+        // --- GLOBAL ELEMENTS & VARS ---
+        const profileIcon = document.getElementById('profile-icon');
+        const settingsModal = document.getElementById('settings-modal');
+        const calendarEl = document.getElementById('calendar');
+        const reasonTooltip = document.getElementById('reason-tooltip');
+        let calendar;
+        let dashboardData = {};
+
+        // --- CORE FUNCTIONS ---
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/user/dashboard', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.status === 400) { window.location.href = '/setup.html'; return; }
+                dashboardData = await response.json();
+                
+                document.getElementById('tiffin-count').textContent = dashboardData.totalTiffins;
+                document.getElementById('total-bill').textContent = dashboardData.totalBill.toFixed(2);
+                document.getElementById('mess-name').textContent = dashboardData.messName;
+                document.getElementById('user-name-display').textContent = dashboardData.name;
+                
+                const timeListDisplay = document.getElementById('time-list-display');
+                timeListDisplay.innerHTML = '';
+                dashboardData.notificationTimes.sort().forEach(time => {
+                    timeListDisplay.innerHTML += `<li>🕒 ${time}</li>`;
+                });
+                
+                renderCalendar();
+            } catch (error) { console.error('Failed to load dashboard:', error); }
+        }
+        
+        function renderCalendar() {
+            if (calendar) calendar.destroy();
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                dayCellContent: function(arg) {
+                    let dayEntry = dashboardData.entries.find(e => new Date(e.date).toDateString() === arg.date.toDateString());
+                    let mealSlotsHtml = '<div class="meal-slots-container">';
+                    if (dashboardData.notificationTimes) {
+                        dashboardData.notificationTimes.forEach(time => {
+                            let mealStatus = 'pending';
+                            let reasonText = '';
+                            if (dayEntry) {
+                                let meal = dayEntry.meals.find(m => m.time === time);
+                                if (meal) {
+                                    mealStatus = meal.status;
+                                    if (meal.status === 'skipped' && meal.reason) {
+                                        reasonText = meal.reason;
+                                    }
+                                }
+                            }
+                            mealSlotsHtml += `<div class="meal-box ${mealStatus}" data-reason="${reasonText}" data-status="${mealStatus}"></div>`;
+                        });
+                    }
+                    mealSlotsHtml += '</div>';
+                    return { html: `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>${mealSlotsHtml}` };
+                }
+            });
+            calendar.render();
+        }
+
+        // --- INITIAL PAGE LOAD & EVENT LISTENERS SETUP ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userName = localStorage.getItem('tiffinUserName');
+            profileIcon.textContent = userName ? userName.charAt(0).toUpperCase() : 'U';
+
+            initializeEventListeners();
+            
+            const needsRefresh = await handleUrlActions(); 
+
+            if (!needsRefresh) {
+                await loadDashboardData();
+            }
+            
+            configurePushNotifications();
+        });
+
+        function initializeEventListeners() {
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.clear();
+                window.location.href = '/login.html';
+            });
+            profileIcon.addEventListener('click', openSettingsModal);
+            document.querySelector('#settings-modal .close-btn').addEventListener('click', () => settingsModal.classList.add('hidden'));
+            window.addEventListener('click', (e) => { if (e.target == settingsModal) settingsModal.classList.add('hidden'); });
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            document.getElementById('new-setup-btn').addEventListener('click', startNewSetup);
+            document.getElementById('delete-account-btn').addEventListener('click', deleteAccount);
+            document.getElementById('load-history-btn').addEventListener('click', loadHistory);
+            
+            initializeTooltipLogic();
+        }
+        
+        async function handleUrlActions() {
+            const reasonModal = document.getElementById('reason-modal');
+            const saveReasonBtn = document.getElementById('save-reason-btn');
+            let timeToSkip = null;
+            let didUpdate = false;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+            const time = urlParams.get('time');
+
+            if (action === 'record' && time) {
+                try {
+                    await fetch('/api/user/record-tiffin', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ time }) });
+                    window.history.replaceState({}, document.title, "/dashboard.html");
+                    await loadDashboardData(); 
+                    didUpdate = true;
+                } catch (error) { console.error(error); }
+
+            } else if (action === 'askReason' && time) {
+                timeToSkip = time;
+                reasonModal.classList.remove('hidden');
+                window.history.replaceState({}, document.title, "/dashboard.html");
+            }
+    
+            saveReasonBtn.addEventListener('click', async () => {
+                if (!timeToSkip) return;
+                const reason = document.getElementById('skip-reason-input').value;
+                try {
+                    await fetch('/api/user/skip-tiffin', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ time: timeToSkip, reason: reason }) });
+                    reasonModal.classList.add('hidden');
+                    document.getElementById('skip-reason-input').value = '';
+                    await loadDashboardData();
+                } catch (error) { console.error('Failed to save skip reason:', error); }
+            });
+            return didUpdate;
+        }
+
+        // --- EVENT HANDLER FUNCTIONS ---
+        async function openSettingsModal() {
+            try {
+                const response = await fetch('/api/user/settings', { headers: { 'Authorization': `Bearer ${token}` } });
+                const settings = await response.json();
+                document.getElementById('edit-mess-name').value = settings.messName;
+                document.getElementById('edit-price').value = settings.pricePerTiffin;
+                const timeInputsContainer = document.getElementById('edit-time-inputs');
+                timeInputsContainer.innerHTML = '';
+                settings.notificationTimes.forEach((time) => {
+                    timeInputsContainer.innerHTML += `<input type="time" class="edit-time-input form-group" value="${time}">`;
+                });
+                settingsModal.classList.remove('hidden');
+            } catch (error) { console.error('Failed to load settings:', error); }
+        }
+
+        async function saveSettings() {
+            const updatedTimes = Array.from(document.querySelectorAll('.edit-time-input')).map(input => input.value);
+            const updatedSettings = {
+                messName: document.getElementById('edit-mess-name').value, pricePerTiffin: parseFloat(document.getElementById('edit-price').value), notificationTimes: updatedTimes
+            };
+            try {
+                const response = await fetch('/api/user/settings', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updatedSettings)
+                });
+                if (!response.ok) throw new Error("Failed to save.");
+                const msgEl = document.getElementById('settings-message');
+                msgEl.style.color = 'green';
+                msgEl.textContent = 'Saved successfully!';
+                await loadDashboardData();
+                setTimeout(() => { settingsModal.classList.add('hidden'); msgEl.textContent = ''; }, 1500);
+            } catch (error) { document.getElementById('settings-message').textContent = error.message; }
+        }
+
+        function startNewSetup() {
+            if (window.confirm('This will take you to the setup page to reconfigure your meal count and times. Are you sure?')) {
+                window.location.href = '/setup.html';
+            }
+        }
+
+        async function deleteAccount() {
+            if (window.confirm('ARE YOU SURE?\n\nThis will permanently delete your account and all data.')) {
+                try {
+                    await fetch('/api/user/delete', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                    alert('Your account has been deleted.');
+                    localStorage.clear();
+                    window.location.href = '/login.html';
+                } catch (error) { document.getElementById('settings-message').textContent = error.message; }
+            }
+        }
+        
+        function initializeTooltipLogic() {
+            let visibleTooltipTarget = null;
+            calendarEl.addEventListener('click', (e) => {
+                const mealBox = e.target;
+                if (!mealBox.classList.contains('meal-box')) {
+                    if(visibleTooltipTarget) {
+                       reasonTooltip.classList.remove('visible');
+                       visibleTooltipTarget = null;
+                    }
+                    return;
+                }
+                if (visibleTooltipTarget && visibleTooltipTarget !== mealBox) {
+                    reasonTooltip.classList.remove('visible');
+                    visibleTooltipTarget = null;
+                }
+                const status = mealBox.dataset.status;
+                const reason = mealBox.dataset.reason;
+                if (status === 'skipped' && reason) {
+                    if (visibleTooltipTarget === mealBox) {
+                        reasonTooltip.classList.remove('visible');
+                        visibleTooltipTarget = null;
+                    } else {
+                        reasonTooltip.textContent = reason;
+                        const rect = mealBox.getBoundingClientRect();
+                        reasonTooltip.style.left = `${rect.left + rect.width / 2}px`;
+                        reasonTooltip.style.top = `${rect.top}px`;
+                        reasonTooltip.style.transform = 'translate(-50%, -110%)';
+                        reasonTooltip.classList.add('visible');
+                        visibleTooltipTarget = mealBox;
+                    }
+                }
+            });
+        }
+        
+        async function loadHistory() {
+            const historyContainer = document.getElementById('history-container');
+            const loadHistoryBtn = document.getElementById('load-history-btn');
+            historyContainer.innerHTML = '<p>Loading history...</p>';
+            historyContainer.classList.remove('hidden');
+            try {
+                const response = await fetch('/api/user/history', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error('Could not fetch history.');
+                const historyData = await response.json();
+                if (historyData.length === 0) {
+                    historyContainer.innerHTML = '<p>No past history found.</p>';
+                } else {
+                    let historyHtml = '';
+                    historyData.forEach(month => {
+                        historyHtml += `<div class="history-card">
+                            <div class="history-card-month">${month.month} ${month.year}</div>
+                            <div class="history-card-stats">
+                                <p>${month.totalTiffins} Tiffins</p>
+                                <p class="bill">₹${month.totalBill}</p>
+                            </div></div>`;
+                    });
+                    historyContainer.innerHTML = historyHtml;
+                }
+                loadHistoryBtn.style.display = 'none';
+            } catch (error) { historyContainer.innerHTML = `<p style="color: red;">${error.message}</p>`; }
+        }
+
+        async function configurePushNotifications() {
+            console.log('%c--- Starting Notification Setup ---', 'color: #F9A826; font-weight: bold;');
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) { console.error('❌ Push messaging is not supported.'); return; }
+            console.log('✅ 1. Browser supports Service Workers and Push Messaging.');
+            try {
+                console.log('⏳ 2. Registering service worker file (sw.js)...');
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('✅ 3. Service Worker registered successfully!', registration);
+                console.log(`💬 4. Current notification permission status is: "${Notification.permission}"`);
+                if (Notification.permission === 'default') {
+                    console.log('⏳ 5. Requesting permission...');
+                    const newPermission = await Notification.requestPermission();
+                    console.log(`✅ 6. User responded. New status: "${newPermission}"`);
+                    if (newPermission !== 'granted') { console.warn('⚠️ User denied permission.'); return; }
+                } else if (Notification.permission === 'denied') { console.error('❌ 7. Permission permanently denied.'); return; }
+                console.log('✅ 7. Permission granted.');
+                let subscription = await registration.pushManager.getSubscription();
+                if (subscription) { console.log('✅ 8. User already subscribed.'); } 
+                else {
+                    console.log('⏳ 8. Creating new subscription...');
+                    const response = await fetch('/api/vapid-public-key');
+                    const vapidPublicKey = await response.text();
+                    subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
+                    console.log('✅ 9. New subscription created.');
+                    await fetch('/api/user/subscribe', { method: 'POST', body: JSON.stringify(subscription), headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } });
+                    console.log('✅ 10. Subscription sent to server.');
+                }
+                console.log('%c--- Notification Setup Complete ---', 'color: #4CAF50; font-weight: bold;');
+            } catch (error) { console.error('❌ Critical error during notification setup:', error); }
+        }
+    </script>
+</body>
+</html>

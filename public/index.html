@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyDabba - Your Homemade Meals, Perfectly Tallied.</title>
+    
+    <!-- Google Fonts for a warm, modern feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS RESET & THEME DEFINITION --- */
+        :root {
+            --primary-color: #F9A826; /* Saffron/Mango Orange */
+            --secondary-color: #4CAF50; /* Fresh Green */
+            --dark-color: #3d3d3d; /* Charcoal Grey */
+            --bg-color: #FFF8F0; /* Creamy Off-white */
+            --text-color: #595959;
+            --border-radius: 12px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        section {
+            padding: 6rem 0;
+        }
+        h1, h2, h3 {
+            font-weight: 900;
+            color: var(--dark-color);
+            line-height: 1.2;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 4rem auto;
+        }
+        .highlight {
+            color: var(--primary-color);
+        }
+        
+        /* --- KEYFRAME ANIMATIONS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes tiffin-stack-1 {
+            from { transform: translateY(150px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes tiffin-stack-2 {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes tiffin-stack-3 {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* --- NAVIGATION BAR --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 248, 240, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: padding 0.3s;
+        }
+        .navbar .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--dark-color);
+            text-decoration: none;
+        }
+        .navbar .logo .icon {
+            color: var(--primary-color);
+        }
+        .btn {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--dark-color);
+            box-shadow: 0 4px 15px rgba(249, 168, 38, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(249, 168, 38, 0.5);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            padding-top: 8rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .hero .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+        }
+        .hero-content {
+            flex: 1.2;
+            animation: fadeInUp 1s ease-out;
+        }
+        .hero-content h1 {
+            font-size: 3.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .hero-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            max-width: 550px;
+        }
+        .hero-animation {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Dabba SVG Animation */
+        .dabba-svg {
+            width: 80%;
+            max-width: 350px;
+            filter: drop-shadow(0px 10px 30px rgba(0,0,0,0.1));
+        }
+        .dabba-svg .base { animation: tiffin-stack-1 1s ease-out forwards; }
+        .dabba-svg .mid { animation: tiffin-stack-2 1s ease-out 0.2s forwards; }
+        .dabba-svg .top { animation: tiffin-stack-3 1s ease-out 0.4s forwards; }
+        .dabba-svg .lid { animation: tiffin-stack-3 1s ease-out 0.6s forwards; }
+
+        /* --- WHY US SECTION --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        .feature-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            border: 1px solid #fff;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* --- HOW IT WORKS SECTION --- */
+        #how-it-works {
+            background-color: #fff;
+        }
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            border-radius: 2px;
+        }
+        .timeline-container {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+        }
+        .timeline-container.left { left: 0; }
+        .timeline-container.right { left: 50%; }
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            right: -13px;
+            background-color: #fff;
+            border: 4px solid var(--primary-color);
+            top: 25px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .right::after { left: -12px; }
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: var(--bg-color);
+            position: relative;
+            border-radius: var(--border-radius);
+        }
+        .timeline-content h3 { font-size: 1.4rem; }
+        
+        /* --- TESTIMONIALS SECTION --- */
+        .testimonial-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .testimonial-card p {
+            font-style: italic;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .testimonial-author {
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        /* --- PRICING SECTION --- */
+        #pricing {
+             background: linear-gradient(180deg, var(--bg-color) 0%, #ffffff 100%);
+        }
+        .pricing-card {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary-color);
+        }
+        .pricing-card h3 {
+            font-size: 2rem;
+        }
+        .price {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--dark-color);
+            margin: 1rem 0;
+        }
+        .price span {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--text-color);
+        }
+
+        /* --- CTA SECTION --- */
+        #cta {
+            background-color: var(--dark-color);
+            color: #fff;
+        }
+        #cta .container {
+            text-align: center;
+        }
+        #cta h2 {
+            color: #fff;
+            font-size: 2.8rem;
+            margin-bottom: 2rem;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            background: #2c2c2c;
+            color: #ccc;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .footer p { margin: 0.5rem 0; }
+        .footer .logo { font-size: 1.5rem; font-weight: 700; color:#fff; }
+        
+        /* --- RESPONSIVE DESIGN --- */
+        @media(max-width: 992px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media(max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            .section-title { font-size: 2.2rem; }
+            .hero .container { flex-direction: column; text-align: center; }
+            .hero-content { order: 2; }
+            .hero-animation { order: 1; margin-bottom: 2rem; }
+            .dabba-svg { width: 60%; max-width: 250px; }
+            .timeline::after { left: 15px; }
+            .timeline-container { width: 100%; padding-left: 70px; padding-right: 25px; }
+            .timeline-container.left, .timeline-container.right { left: 0%; }
+            .timeline-container::after { left: 3px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="logo">Daily<span class="icon">Dabba</span></a>
+        <div id="nav-action">
+            <!-- Dynamically filled by JavaScript -->
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Your Homemade Meals, <span class="highlight">Perfectly Tallied.</span></h1>
+                <p>Stop the end-of-month scramble. DailyDabba sends smart reminders and tracks every meal, so your tiffin bill is always accurate and ready.</p>
+                <a href="/signup.html" class="btn btn-primary">Get Started for Free</a>
+            </div>
+            <div class="hero-animation">
+                <!-- Custom SVG Tiffin Animation -->
+                <svg class="dabba-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+                    <g class="lid" fill="#bdc3c7" transform="translate(0, 0)">
+                        <path d="M 50,5 A 45,10 0 0,1 95,5 L 90,0 L 10,0 L 5,5 A 45,10 0 0,0 50,5 Z" />
+                        <rect x="45" y="-5" width="10" height="5" rx="2"/>
+                    </g>
+                    <g class="top" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1" transform="translate(0, 10)">
+                         <path d="M 5,5 H 95 A 5,20 0 0,1 95,35 H 5 A 5,20 0 0,1 5,5 Z" />
+                    </g>
+                    <g class="mid" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1" transform="translate(0, 45)">
+                        <path d="M 5,5 H 95 A 5,20 0 0,1 95,35 H 5 A 5,20 0 0,1 5,5 Z" />
+                    </g>
+                     <g class="base" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1" transform="translate(0, 80)">
+                        <path d="M 5,5 H 95 A 5,20 0 0,1 95,35 H 5 A 5,20 0 0,1 5,5 Z" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Why Choose Us Section -->
+        <section id="why-us">
+            <div class="container">
+                <h2 class="section-title">Why <span class="highlight">DailyDabba?</span></h2>
+                <p class="section-subtitle">We built this for one reason: to make your life simpler. No complex features, just pure, focused tiffin tracking that works.</p>
+                <div class="features-grid">
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Never Miss a Beat</h3>
+                        <p>Our smart notifications are perfectly timed. A simple tap is all it takes to log your meal. You'll never forget again.</p>
+                    </div>
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">💡</div>
+                        <h3>Goodbye, Guesswork</h3>
+                        <p>Get a crystal-clear view of your meal count and total bill anytime. No more manual counting or surprise totals.</p>
+                    </div>
+                    <div class="feature-card animate-on-scroll">
+                        <div class="feature-icon">🧘</div>
+                        <h3>Peace of Mind</h3>
+                        <p>Track skipped meals with reasons, edit settings on the fly, and feel confident your bill is always 100% accurate.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works">
+            <div class="container">
+                <h2 class="section-title">Three Simple Steps to <span class="highlight">Clarity</span></h2>
+                <div class="timeline">
+                    <div class="timeline-container left animate-on-scroll">
+                        <div class="timeline-content">
+                            <h3>1. Quick Setup</h3>
+                            <p>Enter your meal times and tiffin price. That’s it. You’re ready to go.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-container right animate-on-scroll">
+                        <div class="timeline-content">
+                            <h3>2. Tap to Track</h3>
+                            <p>Respond to our daily notifications. A "Yes" logs your meal, a "No" lets you add a reason.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-container left animate-on-scroll">
+                        <div class="timeline-content">
+                            <h3>3. View Your Tally</h3>
+                            <p>Check your dashboard anytime for a real-time count and your total bill for the month.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Testimonials Section -->
+        <section id="testimonials">
+            <div class="container">
+                 <h2 class="section-title">Trusted by Foodies <span class="highlight">Like You</span></h2>
+                 <div class="testimonial-card animate-on-scroll">
+                     <p>"DailyDabba is a game-changer. I used to keep a messy note on my phone. Now, it's all automated. I saved money in the first month by catching mistakes in my bill!"</p>
+                     <div class="testimonial-author">- Anjali S., Software Developer</div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing">
+            <div class="container">
+                <div class="pricing-card animate-on-scroll">
+                    <h3>Our Promise</h3>
+                    <div class="price">FREE</div>
+                    <p>Core features are, and always will be, completely free. Our goal is to simplify your life, not complicate your budget.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Final CTA Section -->
+        <section id="cta">
+            <div class="container">
+                <h2 class="animate-on-scroll">Ready to Simplify Your Tiffin Tracking?</h2>
+                <a href="/signup.html" class="btn btn-primary animate-on-scroll">Create Your Free Account Now</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="logo">Daily<span class="icon">Dabba</span></div>
+            <p>Made with ❤️ for everyone who loves their dabba.</p>
+            <p>&copy; 2024 DailyDabba. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Smart Navigation Bar Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const navActionContainer = document.getElementById('nav-action');
+            const token = localStorage.getItem('tiffinUserToken');
+            const userName = localStorage.getItem('tiffinUserName');
+
+            if (token && userName) {
+                const firstName = userName.split(' ')[0];
+                navActionContainer.innerHTML = `<a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>`;
+            } else {
+                navActionContainer.innerHTML = `<a href="/login.html" class="btn btn-primary">Login / Sign Up</a>`;
+            }
+        });
+
+        // --- Intersection Observer for Scroll Animations ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, {
+            threshold: 0.2 // Trigger when 20% of the element is visible
+        });
+
+        const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
+        elementsToAnimate.forEach(el => {
+            el.style.animation = 'fadeInUp 1s ease-out forwards';
+            el.style.animationPlayState = 'paused'; // Start paused
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
