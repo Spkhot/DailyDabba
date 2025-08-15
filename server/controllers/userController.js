@@ -202,3 +202,34 @@ exports.getHistoryData = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching history.' });
   }
 };
+// ADD THIS ENTIRE NEW FUNCTION
+exports.getPendingMeals = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today
+        
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        // Find today's tiffin entry for the user
+        const entry = await TiffinEntry.findOne({ user: req.user._id, date: today });
+
+        if (!entry) {
+            // If no entry exists for today, there are no pending meals.
+            return res.json([]); 
+        }
+
+        // Filter the meals in that entry to find the ones that are:
+        // 1. Still have a 'pending' status.
+        // 2. Their scheduled time is in the past.
+        const pendingMeals = entry.meals.filter(meal => 
+            meal.status === 'pending' && meal.time < currentTime
+        );
+        
+        res.json(pendingMeals);
+
+    } catch (error) {
+        console.error('Error fetching pending meals:', error);
+        res.status(500).json({ message: 'Server error fetching pending meals.' });
+    }
+};

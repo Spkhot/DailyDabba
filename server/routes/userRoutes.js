@@ -8,7 +8,8 @@ const {
   getUserSettings,
   updateUserSettings,
   deleteUserAccount,
-  getHistoryData 
+  getHistoryData,
+  getPendingMeals
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
@@ -24,4 +25,5 @@ router.get('/settings', getUserSettings);
 router.put('/settings', updateUserSettings);
 router.delete('/delete', deleteUserAccount);
 router.get('/history', getHistoryData);
+router.get('/pending-meals', getPendingMeals);
 module.exports = router;
