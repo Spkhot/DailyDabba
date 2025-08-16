@@ -131,9 +131,14 @@ const startScheduler = () => {
   // (This entire section remains exactly the same. No changes needed here.)
   cron.schedule('* * * * *', async () => {
     const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    
-    console.log(`Scheduler running. Server time is: ${currentTime}`);
+const currentTime = now.toLocaleTimeString("en-IN", {
+  timeZone: "Asia/Kolkata",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+});
+console.log(`Scheduler running. Server time is (IST): ${currentTime}`);
+
 
     try {
       const usersToNotify = await User.find({ 
