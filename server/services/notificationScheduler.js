@@ -182,65 +182,68 @@ console.log(`Scheduler running. Server time is (IST): ${currentTime}`);
   // --- JOB 2: Monthly Summary Notification (Runs once a day) ---
   
   // THE FIX IS HERE. We've changed the time and added the timezone option.
-  console.log('Monthly summary job scheduled to run daily at 10:00 PM India Standard Time.');
-  cron.schedule('0 22 * * *', async () => { 
-    
-    // The entire logic inside this function stays the same as what you provided.
-    const today_utc = new Date();
-    const tomorrow_utc = new Date(today_utc);
-    tomorrow_utc.setUTCDate(today_utc.getUTCDate() + 1);
+  // --- JOB 2: Monthly Summary Notification (Runs once a day) ---
+console.log('Monthly summary job scheduled to run daily at 10:00 PM IST.');
 
-    console.log(`[Monthly Job] Running daily check. Today (UTC): ${today_utc.toISOString().split('T')[0]}`);
+cron.schedule('0 22 * * *', async () => { 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    if (tomorrow_utc.getUTCDate() === 1) {
-      console.log(`[Monthly Job - SUCCESS] Today is the last day of the month! Preparing summaries.`);
-      
-      try {
-        const users = await User.find({ pushSubscription: { $exists: true, $ne: null } });
+  // Get tomorrow in IST (not UTC)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
-        for (const user of users) {
-          const firstDayOfMonth = new Date(Date.UTC(today_utc.getUTCFullYear(), today_utc.getUTCMonth(), 1));
-          const lastDayOfMonth = new Date(Date.UTC(today_utc.getUTCFullYear(), today_utc.getUTCMonth() + 1, 0, 23, 59, 59));
-          
-          const entries = await TiffinEntry.find({ 
-            user: user._id, 
-            date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth } 
+  console.log(`[Monthly Job] Running daily check. Today (IST): ${today.toISOString().split('T')[0]}`);
+
+  if (tomorrow.getDate() === 1) {  // ✅ Now it works in IST
+    console.log(`[Monthly Job - SUCCESS] Today is the last day of the month! Preparing summaries.`);
+
+    try {
+      const users = await User.find({ pushSubscription: { $exists: true, $ne: null } });
+
+      for (const user of users) {
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+
+        const entries = await TiffinEntry.find({ 
+          user: user._id, 
+          date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth } 
+        });
+
+        let totalTiffins = 0;
+        entries.forEach(entry => {
+          entry.meals.forEach(meal => {
+            if (meal.status === 'taken') totalTiffins++;
           });
-          
-          let totalTiffins = 0;
-          entries.forEach(entry => {
-            entry.meals.forEach(meal => {
-              if (meal.status === 'taken') totalTiffins++;
-            });
+        });
+
+        if (totalTiffins > 0) {
+          const totalBill = totalTiffins * user.pricePerTiffin;
+          const monthName = firstDayOfMonth.toLocaleString('en-IN', { month: 'long', timeZone: 'Asia/Kolkata' });
+
+          const payload = JSON.stringify({
+            title: `Your ${monthName} Tiffin Summary! 🍱`,
+            body: `You had ${totalTiffins} tiffins for a total bill of ₹${totalBill.toFixed(2)}. The tracker is ready for the new month!`,
           });
 
-          if (totalTiffins > 0) {
-            const totalBill = totalTiffins * user.pricePerTiffin;
-            const monthName = firstDayOfMonth.toLocaleString('default', { month: 'long', timeZone: 'UTC' });
-
-            const payload = JSON.stringify({
-              title: `Your ${monthName} Tiffin Summary! 🍱`,
-              body: `You had ${totalTiffins} tiffins for a total bill of ₹${totalBill.toFixed(2)}. The tracker is ready for the new month!`,
-            });
-
-            console.log(`[Monthly Job] Sending summary to ${user.email}`);
-            webpush.sendNotification(user.pushSubscription, payload).catch(err => {
-              console.error(`[Monthly Job - ERROR] Failed to send summary to ${user.email}:`, err.body);
-            });
-          } else {
-            console.log(`[Monthly Job - INFO] No tiffins recorded for ${user.email} this month. Skipping summary.`);
-          }
+          console.log(`[Monthly Job] Sending summary to ${user.email}`);
+          webpush.sendNotification(user.pushSubscription, payload).catch(err => {
+            console.error(`[Monthly Job - ERROR] Failed to send summary to ${user.email}:`, err.body);
+          });
+        } else {
+          console.log(`[Monthly Job - INFO] No tiffins recorded for ${user.email} this month. Skipping summary.`);
         }
-      } catch (error) {
-        console.error('[Monthly Job - CRITICAL ERROR] An error occurred:', error);
       }
-    } else {
-        console.log(`[Monthly Job] Not the last day of the month. No action taken.`);
+    } catch (error) {
+      console.error('[Monthly Job - CRITICAL ERROR] An error occurred:', error);
     }
-  }, { // <-- The options object is the THIRD argument to cron.schedule
-    scheduled: true,
-    timezone: "Asia/Kolkata" // <-- This is the magic line
-  });
+  } else {
+    console.log(`[Monthly Job] Not the last day of the month. No action taken.`);
+  }
+}, { 
+  scheduled: true,
+  timezone: "Asia/Kolkata"  // ✅ correct placement
+});
 };
 
 module.exports = { startScheduler };
