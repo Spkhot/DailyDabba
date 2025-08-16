@@ -207,25 +207,27 @@ exports.getPendingMeals = async (req, res) => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of today
-        
+
         const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         // Find today's tiffin entry for the user
         const entry = await TiffinEntry.findOne({ user: req.user._id, date: today });
 
         if (!entry) {
-            // If no entry exists for today, there are no pending meals.
-            return res.json([]); 
+            return res.json([]); // No entry means no pending meals
         }
 
-        // Filter the meals in that entry to find the ones that are:
-        // 1. Still have a 'pending' status.
-        // 2. Their scheduled time is in the past.
-        const pendingMeals = entry.meals.filter(meal => 
-            meal.status === 'pending' && meal.time < currentTime
-        );
-        
+        const pendingMeals = entry.meals.filter(meal => {
+            if (meal.status !== 'pending') return false;
+
+            // Convert meal.time ("HH:mm") into a Date
+            const [hours, minutes] = meal.time.split(":").map(Number);
+            const mealTime = new Date(today);
+            mealTime.setHours(hours, minutes, 0, 0);
+
+            return mealTime < now; // Only past meals
+        });
+
         res.json(pendingMeals);
 
     } catch (error) {
